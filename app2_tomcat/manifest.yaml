@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2_tomcat
+  labels:
+    name: app2_tomcat
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: app2_tomcat
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        name: app2_tomcat
+        tier: frontend
+    spec:
+      containers:
+      - name: app2_tomcat
+        image: mohansai7/app2_tomcat:v1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2_tomcat
+spec:
+  selector:
+    name: app2_tomcat
+    tier: frontend
+  ports:
+  - name: nginx-svc-port
+    protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:    
+    name: app2_tomcat
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:022499022353:certificate/7f8a5b74-56c3-4977-8c2b-08fc3644eea5
+      alb.ingress.kubernetes.io/listen-ports: '[ {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
+      alb.ingress.kubernetes.io/group.name: fusion 
+
+spec:    
+    ingressClassName: alb
+    rules:
+    - host: "app2_tomcat.mohansai.online"
+      http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: app2_tomcat
+              port:
+                number: 80

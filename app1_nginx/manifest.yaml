@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1_nginx
+  labels: 
+    name: app1_nginx
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: app1_nginx
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        name: app1_nginx
+        tier: frontend
+    spec:
+      containers:
+      - name: app1_nginx
+        image: mohansai7/app1_nginx:v1
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: app1_nginx
+spec:
+  selector:
+    name: app1_nginx
+    tier: frontend
+  ports:
+  - name: nginx-svc-port
+    protocol: TCP
+    port: 80 # service port
+    targetPort: 80 # container port
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:   
+    name: app1_nginx
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:022499022353:certificate/7f8a5b74-56c3-4977-8c2b-08fc3644eea5
+      alb.ingress.kubernetes.io/listen-ports: '[ {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
+      alb.ingress.kubernetes.io/group.name: fusion
+spec:   
+    ingressClassName: alb
+    rules:
+    - host: "app1_nginx.mohansai.online"
+      http:
+        paths:
+        - pathType: Prefix
+          path: "/"
+          backend:
+            service:
+              name: app1_nginx
+              port:
+                number: 80
+
+
+
+
