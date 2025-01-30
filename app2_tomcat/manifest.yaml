@@ -1,34 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app2_tomcat
+  name: tomcat
   labels:
-    name: app2_tomcat
+    name: tomcat
     tier: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: app2_tomcat
+      name: tomcat
       tier: frontend
   template:
     metadata:
       labels:
-        name: app2_tomcat
+        name: tomcat
         tier: frontend
     spec:
       containers:
-      - name: app2_tomcat
-        image: mohansai7/app2_tomcat:v1
+      - name: tomcat
+        image: mohansai7/tomcat:v1
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: app2_tomcat
+  name: tomcat
 spec:
   selector:
-    name: app2_tomcat
+    name: tomcat
     tier: frontend
   ports:
   - name: nginx-svc-port
@@ -40,7 +40,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:    
-    name: app2_tomcat
+    name: tomcat
     annotations:
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/target-type: ip
@@ -52,13 +52,13 @@ metadata:
 spec:    
     ingressClassName: alb
     rules:
-    - host: "app2_tomcat.mohansai.online"
+    - host: "tomcat.mohansai.online"
       http:
         paths:
         - pathType: Prefix
           path: "/"
           backend:
             service:
-              name: app2_tomcat
+              name: tomcat
               port:
                 number: 8080
